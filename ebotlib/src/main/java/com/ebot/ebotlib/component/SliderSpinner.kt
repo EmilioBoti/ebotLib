@@ -1,5 +1,6 @@
 package com.ebot.ebotlib.component
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -8,12 +9,13 @@ import android.graphics.Path
 import android.graphics.PointF
 import android.graphics.Rect
 import android.graphics.RectF
-import android.graphics.SweepGradient
+import android.graphics.Shader
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
 import android.os.Build
 import android.util.AttributeSet
 import android.view.MotionEvent
+import androidx.annotation.FontRes
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.drawable.DrawableCompat
@@ -25,6 +27,7 @@ import kotlin.math.roundToInt
 import kotlin.math.sin
 
 
+@SuppressLint("ResourceType")
 class SliderSpinner @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
@@ -61,26 +64,26 @@ class SliderSpinner @JvmOverloads constructor(
     private var iconSize: Float = DEFAULT_ICON_SIZE
 
     private var trackColor: Int = R.color.neutral_02
-//    private var mode: ThermostatMode = ThermostatMode.ENERGY_SAVE_COOL
-    private var trackProgressColor: Int = R.color.brand_02
+    private var trackProgressColor: Int = R.color.palette_01
+    private var iconColor: Int = trackProgressColor
     private var dashesLinesWidth: Float = 3f
     private var thumbColor: Int = R.color.neutral
 
     private var fontFamily: Typeface? = null
-    private var progressLineGradient: SweepGradient? = null
-
+    private var progressLineGradient: Shader? = null
 
     private var sppinerRadius: Float = 0f
     private var trackWidth: Float = 18f
     private var tempValueSize: Float = 120f
-    private var tempValue = "20.4"
-    private var tempUnit = "°C"
+    private var tempValue = ""
+    private var tempUnit = ""
+//    private var tempUnit = "°C"
     private var temperatureValue = "$tempValue${tempUnit}"
 
     private val startAngle = START_ANGLE
     private val endAngle = END_ANGLE
     var minValue: Float = 0f
-    var maxValue: Float = 100f
+    var maxValue: Float = 1f
     private var progress: Float = 30f
     private var isOn: Boolean = true
     private var isOperatigStateActive: Boolean = true
@@ -94,20 +97,32 @@ class SliderSpinner @JvmOverloads constructor(
     }
 
     init {
-//        fontFamily = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//            resources.getFont(R.font.notosans_light300)
-//        } else {
-//            ResourcesCompat.getFont(context, R.font.notosans_light300)
-//        }
         attrs?.let {
             val attr = context.obtainStyledAttributes(it, R.styleable.SliderSpinner)
             try {
+                isOn = attr.getBoolean(R.styleable.SliderSpinner_isOn, true)
                 dashesLinesWidth = attr.getFloat(R.styleable.SliderSpinner_dashLinesWidth, dashesLinesWidth)
-                tempValue = attr.getString(R.styleable.SliderSpinner_value) ?: "--"
+                tempValue = attr.getString(R.styleable.SliderSpinner_value) ?: ""
                 tempValueSize = attr.getDimension(R.styleable.SliderSpinner_valueSize, tempValueSize)
                 trackWidth = attr.getDimension(R.styleable.SliderSpinner_trackWidth, trackWidth)
                 progress = attr.getFloat(R.styleable.SliderSpinner_trackProgress, progress)
+                trackProgressColor = attr.getResourceId(R.styleable.SliderSpinner_trackProgressColor, trackProgressColor)
+                iconColor = attr.getResourceId(R.styleable.SliderSpinner_iconColor, trackProgressColor)
+                modeIcon = attr.getResourceId(R.styleable.SliderSpinner_icon, 0)
+                    .takeIf { it != 0 }
+                    ?.let { iconId ->
+                    ContextCompat.getDrawable(context, iconId)
+                }
                 iconSize = attr.getDimension(R.styleable.SliderSpinner_iconSize, DEFAULT_ICON_SIZE)
+                fontFamily = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    attr.getFont(R.styleable.SliderSpinner_font)
+                } else {
+                    attr.getResourceId(R.styleable.SliderSpinner_font, 0)
+                        .takeIf { it != 0 }
+                        ?.let { font ->
+                            ResourcesCompat.getFont(context, font)
+                        }
+                }
             } finally {
                 attr.recycle()
             }
@@ -160,7 +175,6 @@ class SliderSpinner @JvmOverloads constructor(
             cacheBitmap?.let { cacheBitmap ->
                 cacheCanvas = Canvas(cacheBitmap)
                 cacheCanvas?.let { cacheCanvas ->
-//                    progressLineGradient = getGradient()
                     drawTrack(cacheCanvas)
                     drawSpinnerCirlce(cacheCanvas)
                     drawModeIcon(cacheCanvas)
@@ -222,7 +236,7 @@ class SliderSpinner @JvmOverloads constructor(
             progressAngle,
             false,
             trackPaint.apply {
-                this.color = ContextCompat.getColor(context, trackProgressColor)
+                this.color = getIsOnColor(trackProgressColor)
                 this.strokeWidth = trackWidth
                 this.shader = progressLineGradient
             }
@@ -232,31 +246,11 @@ class SliderSpinner @JvmOverloads constructor(
             thumbPos.x,
             thumbPos.y,
             trackWidth.times(1.2f),
-            mSpinnerPaint
+            mSpinnerPaint.apply {
+                this.color = ContextCompat.getColor(context, thumbColor)
+            }
         )
     }
-
-//    private fun getGradient(): SweepGradient {
-//        val colors = getGradientColors()
-//        val position = floatArrayOf(0.0f, 0.39f, 0.49f)
-//        return SweepGradient(0.0f, 2.0f, colors, position)
-//    }
-//
-//    private fun getGradientColors(): IntArray {
-//        return if (isOn) {
-//            intArrayOf(
-//                context.getColor(mode.mainColor),
-//                context.getColor(mode.secondaryColor),
-//                context.getColor(mode.secondaryColor)
-//            )
-//        } else {
-//            intArrayOf(
-//                context.getColor(R.color.neutral_02),
-//                context.getColor(R.color.neutral_02),
-//                context.getColor(R.color.neutral_02)
-//            )
-//        }
-//    }
 
     private fun drawTrack(canvas: Canvas) {
         canvas.drawArc(
@@ -281,7 +275,6 @@ class SliderSpinner @JvmOverloads constructor(
     }
 
     private fun drawModeIcon(canvas: Canvas) {
-        modeIcon = ContextCompat.getDrawable(context, R.drawable.ic_android_24)
         val iconWidth = iconSize.times(.5f).toInt()
         val leftPoint = centerX.toInt()
         val radius2 = sppinerRadius + track.width().times(DEFAULT_PADDING) - sppinerRadius.times(.483f)
@@ -295,7 +288,7 @@ class SliderSpinner @JvmOverloads constructor(
                 topPoint + iconWidth
             )
             DrawableCompat.wrap(it)
-            DrawableCompat.setTint(it,  getIsOperatingState())
+            DrawableCompat.setTint(it,  getIsOnColor(iconColor))
             it.draw(canvas)
         }
     }
@@ -360,7 +353,7 @@ class SliderSpinner @JvmOverloads constructor(
             tempValuePaint
         )
         canvas.drawText(
-            Units.C.symbol,
+            tempUnit,
             centerX + bounds.right.div(2f) + 20f,
             tempValuesHeight + bounds.top.times(.7f),
             tempValuePaint.apply {
@@ -389,15 +382,9 @@ class SliderSpinner @JvmOverloads constructor(
         )
     }
 
-    private fun getIsOnColor(): Int {
+    private fun getIsOnColor(colorId: Int): Int {
         return if (isOn) {
-            ContextCompat.getColor(context, R.color.palette_04)
-        } else ContextCompat.getColor(context, R.color.neutral_03)
-    }
-
-    private fun getIsOperatingState(): Int {
-        return if (isOperatigStateActive) {
-            ContextCompat.getColor(context, R.color.neutral_04)
+            ContextCompat.getColor(context, colorId)
         } else ContextCompat.getColor(context, R.color.neutral_02)
     }
 
@@ -414,14 +401,23 @@ class SliderSpinner @JvmOverloads constructor(
 //        invalidate()
 //    }
 
-    fun enableOperatingState(isEnable: Boolean) {
-        this.isOperatigStateActive = isEnable
+    fun setProgress(value: Float) {
+        progress = convertSetPointValueToPercent(value.coerceIn(minValue, maxValue))
+        tempValue = calcualteSetpoint(progress).toString()
         invalidate()
     }
 
-    fun setProgress(value: Float) {
-        progress = convertSetPointValueToPercent(value.coerceIn(0f, 100f))
-        tempValue = calcualteSetpoint(progress).toString()
+    fun setFonFamily(@FontRes fonId: Int) {
+        fontFamily = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            resources.getFont(fonId)
+        } else {
+            ResourcesCompat.getFont(context, fonId)
+        }
+        invalidate()
+    }
+
+    fun setIcon(iconId: Int) {
+        modeIcon = ContextCompat.getDrawable(context, iconId)
         invalidate()
     }
 
