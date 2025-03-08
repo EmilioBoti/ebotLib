@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="SliderSpinner">
+        <attr name="trackProgress" format="float"/>
+        <attr name="dashLinesWidth" format="float"/>
+        <attr name="value" format="string"/>
+        <attr name="valueSize" format="dimension"/>
+        <attr name="trackWidth" format="dimension"/>
+        <attr name="iconSize" format="dimension"/>
+        <attr name="isOn" format="boolean"/>
+        <attr name="mode" format="enum">
+            <enum name="heat" value="0"/>
+            <enum name="cold" value="1"/>
+            <enum name="fan" value="2"/>
+            <enum name="humility" value="3"/>
+            <enum name="auto" value="4"/>
+            <enum name="off" value="5"/>
+        </attr>
+        <attr name="units" format="enum">
+            <enum name="celsius" value="0"/>
+            <enum name="fahrenheit" value="1"/>
+            <enum name="percent" value="2"/>
+        </attr>
+    </declare-styleable>
+</resources>
