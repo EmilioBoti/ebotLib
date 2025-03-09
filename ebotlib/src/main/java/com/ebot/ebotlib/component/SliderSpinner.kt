@@ -25,6 +25,7 @@ import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.math.sin
+import androidx.core.graphics.createBitmap
 
 
 @SuppressLint("ResourceType")
@@ -32,7 +33,7 @@ class SliderSpinner @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
-): BaseView(context, attrs, defStyleAttr) {
+): BaseSliderView(context, attrs, defStyleAttr) {
 
     private val dashesLines: Path = Path()
     private val middleTextContainer: RectF = RectF()
@@ -51,10 +52,6 @@ class SliderSpinner @JvmOverloads constructor(
 
     private var cacheBitmap: Bitmap? = null
     private var cacheCanvas: Canvas? = null
-    private var cacheInvalidated = true
-
-    private var onSliderChanged: OnSliderChanged? = null
-
 
     private var centerX: Float = 0f
     private var centerY: Float = 0f
@@ -144,11 +141,6 @@ class SliderSpinner @JvmOverloads constructor(
         cacheInvalidated = true
     }
 
-    fun setOnSliderChanged(onSliderChanged: OnSliderChanged) {
-        this.onSliderChanged = onSliderChanged
-    }
-
-
     private fun calculatePositions(w: Int, h: Int, oldw: Int, oldh: Int) {
         centerX = w.times(0.5f)
         centerY = h.times(0.5f)
@@ -171,7 +163,7 @@ class SliderSpinner @JvmOverloads constructor(
      */
     private fun createCache() {
         if (cacheBitmap == null || cacheInvalidated) {
-            cacheBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+            cacheBitmap = createBitmap(width, height)
             cacheBitmap?.let { cacheBitmap ->
                 cacheCanvas = Canvas(cacheBitmap)
                 cacheCanvas?.let { cacheCanvas ->

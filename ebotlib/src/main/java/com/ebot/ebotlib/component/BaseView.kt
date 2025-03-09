@@ -17,6 +17,9 @@ open class BaseView @JvmOverloads constructor(
 ): View(context, attrs, defStyleAttr) {
 
 
+    protected var cacheInvalidated = true
+
+
     @RequiresApi(Build.VERSION_CODES.O_MR1)
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         event?.let { touch ->
