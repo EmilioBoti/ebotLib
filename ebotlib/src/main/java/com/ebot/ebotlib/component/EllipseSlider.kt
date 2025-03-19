@@ -111,7 +111,10 @@ class EllipseSlider @JvmOverloads constructor(
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         val mWidth = resolveSizeAndState(DEFAULT_VIEW_WIDTH, widthMeasureSpec, 0)
         val mHeight = resolveSizeAndState(DEFAULT_VIEW_HEIGHT, heightMeasureSpec, 0)
-        this.setMeasuredDimension(mWidth, mHeight)
+        this.setMeasuredDimension(
+            mWidth.plus(thumbRadius.toInt().times(2)).plus(trackWidth).toInt(),
+            mHeight.plus(thumbRadius.toInt()).plus(trackWidth).toInt()
+        )
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -127,26 +130,26 @@ class EllipseSlider @JvmOverloads constructor(
         trackPath.apply {
             this.reset()
             this.moveTo(
-                trackWidth,
-                h - trackWidth.times(2f)
+                thumbRadius.plus(trackWidth),
+                h - thumbRadius.times(2f).plus(trackWidth)
             )
             this.cubicTo(
-                trackWidth, h - trackWidth.times(2f),
-                centerX, trackWidth,
-                width.toFloat() - trackWidth,h- trackWidth.times(2f)
+                thumbRadius, h - thumbRadius.times(2f),
+                centerX, thumbRadius,
+                width.toFloat() - thumbRadius.plus(trackWidth),h- thumbRadius.times(2f).plus(trackWidth)
             )
         }
 
         trackProgressPath.apply {
             this.reset()
             this.moveTo(
-                trackWidth,
-                h - trackWidth.times(2f)
+                thumbRadius.plus(trackWidth),
+                h - thumbRadius.times(2f).plus(trackWidth)
             )
             this.cubicTo(
-                trackWidth, h - trackWidth.times(2f),
-                centerX, trackWidth,
-                width.toFloat() - trackWidth,h- trackWidth.times(2f)
+                thumbRadius, h - thumbRadius.times(2f),
+                centerX, thumbRadius,
+                width.toFloat() - thumbRadius.plus(trackWidth),h- thumbRadius.times(2f).plus(trackWidth)
             )
         }
         trackPathMeasure.setPath(trackPath, false)
