@@ -29,7 +29,7 @@ import androidx.core.graphics.createBitmap
 
 
 @SuppressLint("ResourceType")
-class SliderSpinner @JvmOverloads constructor(
+internal class SliderSpinner @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
@@ -449,13 +449,14 @@ class SliderSpinner @JvmOverloads constructor(
             super.onTouchEvent(event)
             return when(event?.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    onSliderChanged?.onChangeValueStart()
+                    val setPointValue = calcualteSetpoint(progress)
+                    onSliderChanged?.onChangeValueStart(setPointValue)
                     true
                 }
                 MotionEvent.ACTION_MOVE -> {
                     updateProgressBasedOnTouch(event.x, event.y)
                     val setPointValue = calcualteSetpoint(progress)
-                    onSliderChanged?.onChangingValue(setPointValue)
+                    onSliderChanged?.onChangedValue(setPointValue)
                     return true
                 }
                 MotionEvent.ACTION_UP -> {

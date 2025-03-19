@@ -18,4 +18,15 @@
             <enum name="percent" value="2"/>
         </attr>
     </declare-styleable>
+
+    <declare-styleable name="EllipseSlider">
+        <attr name="progressValue" format="float"/>
+        <attr name="minValue" format="float"/>
+        <attr name="maxValue" format="float"/>
+        <attr name="progressTint" format="color"/>
+        <attr name="ellipseWidth" format="dimension"/>
+        <attr name="thumbTint" format="color"/>
+        <attr name="thumbRadius" format="dimension"/>
+    </declare-styleable>
+
 </resources>

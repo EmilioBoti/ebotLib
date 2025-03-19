@@ -11,7 +11,6 @@ import android.view.MotionEvent
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.createBitmap
 import com.ebot.ebotlib.R
-import kotlin.math.min
 
 
 class EllipseSlider @JvmOverloads constructor(
@@ -30,11 +29,6 @@ class EllipseSlider @JvmOverloads constructor(
         this.style = Paint.Style.STROKE
         this.strokeCap = Paint.Cap.ROUND
     }
-    private val trackProgressPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        this.color = ContextCompat.getColor(context, R.color.neutral_02)
-        this.style = Paint.Style.STROKE
-        this.strokeCap = Paint.Cap.ROUND
-    }
 
     private val thumbPaint: Paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         this.color = ContextCompat.getColor(context, R.color.neutral)
@@ -42,30 +36,81 @@ class EllipseSlider @JvmOverloads constructor(
         this.strokeCap = Paint.Cap.ROUND
     }
 
+    var progressTint: Int = ContextCompat.getColor(context, R.color.palette_01)
+        set(value) {
+            field = ContextCompat.getColor(context, value)
+        }
+
+    var thumTint: Int = ContextCompat.getColor(context, R.color.neutral)
+        set(value) {
+            field = ContextCompat.getColor(context, value)
+        }
+
     private var cacheBitmap: Bitmap? = null
     private var cacheCanva: Canvas? = null
 
-
     private var centerX: Float = 0f
     private var centerY: Float = 0f
-    private var trackWidth: Float = 24f
+    private var trackWidth: Float = 22f
+    private var thumbRadius: Float = trackWidth
     private var progress: Float = 0.0f
-    private var minValue: Float = 0f
-    private var maxValue: Float = 100f
+    var value: Float = 0f
+        set(value) {
+            field = value.coerceIn(minValue, maxValue)
+            progress = this.value.div(maxValue)
+            updateProgress(progress)
+            invalidate()
+        }
+    var minValue: Float = 0f
+    var maxValue: Float = 100f
     private var progressPos: FloatArray = floatArrayOf(0f, 0f)
+    private var isDragging: Boolean = false
+
 
     companion object {
+
         const val DEFAULT_VIEW_WIDTH: Int = 800
         const val DEFAULT_VIEW_HEIGHT: Int = 400
         const val DEFAULT_PADDING: Float = 0.013f
 
     }
 
+
+    init {
+        attrs?.let {
+            val attr = context.obtainStyledAttributes(it, R.styleable.EllipseSlider)
+            try {
+                this.trackWidth = attr.getDimension(R.styleable.EllipseSlider_ellipseWidth, this.trackWidth)
+                this.thumbRadius = attr.getDimension(R.styleable.EllipseSlider_thumbRadius, this.thumbRadius)
+                this.minValue = attr.getFloat(R.styleable.EllipseSlider_minValue, minValue)
+                this.maxValue = attr.getFloat(R.styleable.EllipseSlider_maxValue, maxValue)
+                this.value = calculateProgressValue(
+                    attr.getFloat(
+                        R.styleable.EllipseSlider_progressValue,
+                        this.value
+                    ).coerceIn(minValue, maxValue)
+                        .div(maxValue)
+                )
+                this.progressTint = attr.getResourceId(
+                    R.styleable.EllipseSlider_progressTint,
+                    R.color.palette_01
+                )
+
+                this.thumTint = attr.getResourceId(
+                    R.styleable.EllipseSlider_thumbTint,
+                    R.color.neutral
+                )
+
+            } finally {
+                attr.recycle()
+            }
+        }
+    }
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         val mWidth = resolveSizeAndState(DEFAULT_VIEW_WIDTH, widthMeasureSpec, 0)
         val mHeight = resolveSizeAndState(DEFAULT_VIEW_HEIGHT, heightMeasureSpec, 0)
-        val viewSize =  min(mWidth, mHeight).plus(trackWidth.toInt())
         this.setMeasuredDimension(mWidth, mHeight)
     }
 
@@ -104,9 +149,9 @@ class EllipseSlider @JvmOverloads constructor(
                 width.toFloat() - trackWidth,h- trackWidth.times(2f)
             )
         }
-        progressPos = floatArrayOf(trackWidth, h - trackWidth.times(2f))
         trackPathMeasure.setPath(trackPath, false)
         trackPathLength = trackPathMeasure.length
+        progressPos = floatArrayOf(trackWidth + this.value, h - trackWidth.times(2f))
     }
 
     private fun cacheStaticView() {
@@ -137,20 +182,31 @@ class EllipseSlider @JvmOverloads constructor(
             trackProgressPath,
             true
         )
+        updateProgress(progress)
         canvas.drawPath(
             trackProgressPath,
-            trackProgressPaint.apply {
-                this.color = ContextCompat.getColor(context, R.color.palette_01)
+            trackPaint.apply {
+                this.color = progressTint
                 this.strokeWidth = trackWidth
             }
         )
         canvas.drawCircle(
             progressPos[0],
             progressPos[1],
-            trackWidth,
-            thumbPaint
+            thumbRadius,
+            thumbPaint.apply {
+                this.color = thumTint
+                this.setShadowLayer(
+                    10f,
+                    0f,
+                    0f,
+                    ContextCompat.getColor(
+                        context,
+                        R.color.neutral_02
+                    )
+                )
+            }
         )
-        updateProgress()
     }
 
     private fun onDrawTrack(canvas: Canvas) {
@@ -162,7 +218,7 @@ class EllipseSlider @JvmOverloads constructor(
         )
     }
 
-    private fun updateProgress() {
+    private fun updateProgress(progress: Float) {
         trackPathMeasure.getPosTan(
             trackPathLength * progress,
             progressPos,
@@ -170,22 +226,34 @@ class EllipseSlider @JvmOverloads constructor(
         )
     }
 
+    fun refreshView() {
+        invalidate()
+    }
+
+    private fun calculateProgressValue(progress: Float): Float {
+        return minValue + ((progress.times(maxValue) / maxValue) * (maxValue - minValue))
+    }
+
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         return event?.let {
             super.onTouchEvent(event)
             when(it.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    this.onSliderChanged?.onChangeValueStart()
+                    this.onSliderChanged?.onChangeValueStart(this.value)
                     true
                 }
                 MotionEvent.ACTION_MOVE -> {
-                    progress = (event.x / width).coerceIn(minValue, maxValue)
+                    isDragging = true
+                    progress = (event.x / width)
                     if (progress in 0f..1f) {
-                        val value = progress * maxValue
-                        this.onSliderChanged?.onChangingValue(value)
-                        updateProgress()
-                        invalidate()
+                        this.value = calculateProgressValue(progress)
+                        this.onSliderChanged?.onChangedValue(this.value)
                     }
+                    true
+                }
+                MotionEvent.ACTION_UP -> {
+                    isDragging = false
+                    this.onSliderChanged?.onChangeValueStop(this.value)
                     true
                 }
                 else -> false

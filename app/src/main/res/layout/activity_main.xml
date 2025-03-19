@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
@@ -12,13 +12,18 @@
     >
 
     <com.ebot.ebotlib.component.EllipseSlider
-        android:layout_width="wrap_content"
+        android:id="@+id/ellipseSlider"
+        android:layout_width="match_parent"
         android:layout_height="200dp"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginHorizontal="8dp"
+        android:layout_marginHorizontal="40dp"
+        app:minValue="0"
+        app:maxValue="120"
+        app:progressValue="25"
+        app:progressTint="@color/palette_04"
         />
 <!--    -->
 <!--    <com.ebot.ebotlib.component.SliderSpinner-->
@@ -33,4 +38,4 @@
 <!--        app:iconColor="@color/brand_03"-->
 <!--        />-->
 
-</androidx.appcompat.widget.LinearLayoutCompat>
+</androidx.constraintlayout.widget.ConstraintLayout>
