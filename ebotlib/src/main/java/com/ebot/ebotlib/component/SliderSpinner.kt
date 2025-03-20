@@ -240,6 +240,15 @@ internal class SliderSpinner @JvmOverloads constructor(
             trackWidth.times(1.2f),
             mSpinnerPaint.apply {
                 this.color = ContextCompat.getColor(context, thumbColor)
+                this.setShadowLayer(
+                    10f,
+                    0f,
+                    0f,
+                    ContextCompat.getColor(
+                        context,
+                        R.color.neutral_02
+                    )
+                )
             }
         )
     }
