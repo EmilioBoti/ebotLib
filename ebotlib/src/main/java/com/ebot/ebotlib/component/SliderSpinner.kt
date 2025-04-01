@@ -74,7 +74,6 @@ internal class SliderSpinner @JvmOverloads constructor(
     private var tempValueSize: Float = 120f
     private var tempValue = ""
     private var tempUnit = ""
-//    private var tempUnit = "°C"
     private var temperatureValue = "$tempValue${tempUnit}"
 
     private val startAngle = START_ANGLE
@@ -83,7 +82,9 @@ internal class SliderSpinner @JvmOverloads constructor(
     var maxValue: Float = 1f
     private var progress: Float = 30f
     private var isOn: Boolean = true
-    private var isOperatigStateActive: Boolean = true
+    private var spinnerShadow: Float = 2f
+    private var progressShadow: Float = 2f
+
 
     companion object {
         const val START_ANGLE: Float = 135f
@@ -104,6 +105,8 @@ internal class SliderSpinner @JvmOverloads constructor(
                 trackWidth = attr.getDimension(R.styleable.SliderSpinner_trackWidth, trackWidth)
                 progress = attr.getFloat(R.styleable.SliderSpinner_trackProgress, progress)
                 trackProgressColor = attr.getResourceId(R.styleable.SliderSpinner_trackProgressColor, trackProgressColor)
+                spinnerShadow = attr.getFloat(R.styleable.SliderSpinner_spinnerShadow, spinnerShadow)
+                progressShadow = attr.getFloat(R.styleable.SliderSpinner_progressShadow, progressShadow)
                 iconColor = attr.getResourceId(R.styleable.SliderSpinner_iconColor, trackProgressColor)
                 modeIcon = attr.getResourceId(R.styleable.SliderSpinner_icon, 0)
                     .takeIf { it != 0 }
@@ -215,7 +218,17 @@ internal class SliderSpinner @JvmOverloads constructor(
             centerX,
             centerY,
             sppinerRadius - track.width().times(DEFAULT_PADDING),
-            mSpinnerPaint
+            mSpinnerPaint.apply {
+                this.setShadowLayer(
+                    spinnerShadow,
+                    0f,
+                    0f,
+                    ContextCompat.getColor(
+                        context,
+                        R.color.neutral_02
+                    )
+                )
+            }
         )
     }
 
@@ -231,6 +244,15 @@ internal class SliderSpinner @JvmOverloads constructor(
                 this.color = getIsOnColor(trackProgressColor)
                 this.strokeWidth = trackWidth
                 this.shader = progressLineGradient
+                this.setShadowLayer(
+                    progressShadow,
+                    0f,
+                    0f,
+                    ContextCompat.getColor(
+                        context,
+                        R.color.neutral_02
+                    )
+                )
             }
         )
         val thumbPos = getThumbPosition(progressAngle)
@@ -241,7 +263,7 @@ internal class SliderSpinner @JvmOverloads constructor(
             mSpinnerPaint.apply {
                 this.color = ContextCompat.getColor(context, thumbColor)
                 this.setShadowLayer(
-                    10f,
+                    progressShadow,
                     0f,
                     0f,
                     ContextCompat.getColor(
