@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.maven.publish)
 }
 
 android {
@@ -40,4 +41,21 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+}
+
+//implementation '<<groupId>>:<<artifactId>>:<<tag>>'
+//implementation 'com.ebot:ebotLib:<<tag>>'
+
+publishing {
+    publications {
+        register<MavenPublication>("release") {
+            groupId = "com.github.EmilioBoti"
+            artifactId = "ebotLib"
+            version = "0.0.1"
+
+            afterEvaluate {
+                from(components["release"])
+            }
+        }
+    }
 }

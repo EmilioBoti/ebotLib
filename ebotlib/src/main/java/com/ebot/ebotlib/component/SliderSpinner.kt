@@ -80,7 +80,7 @@ internal class SliderSpinner @JvmOverloads constructor(
     private val endAngle = END_ANGLE
     var minValue: Float = 0f
     var maxValue: Float = 1f
-    private var progress: Float = 30f
+    private var progress: Float = 0f
     private var isOn: Boolean = true
     private var spinnerShadow: Float = 2f
     private var progressShadow: Float = 2f
