@@ -10,7 +10,7 @@ import androidx.annotation.RequiresApi
 import kotlin.math.sqrt
 
 
-open class BaseView @JvmOverloads constructor(
+abstract class BaseView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
