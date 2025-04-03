@@ -353,6 +353,7 @@ public class LibrariesForLibsInPluginsBlock extends AbstractExternalDependencyFa
     public static class PluginAccessors extends PluginFactory {
         private final AndroidPluginAccessors paccForAndroidPluginAccessors = new AndroidPluginAccessors(providers, config);
         private final KotlinPluginAccessors paccForKotlinPluginAccessors = new KotlinPluginAccessors(providers, config);
+        private final MavenPluginAccessors paccForMavenPluginAccessors = new MavenPluginAccessors(providers, config);
 
         public PluginAccessors(ProviderFactory providers, DefaultVersionCatalog config) { super(providers, config); }
 
@@ -368,6 +369,13 @@ public class LibrariesForLibsInPluginsBlock extends AbstractExternalDependencyFa
          */
         public KotlinPluginAccessors getKotlin() {
             return paccForKotlinPluginAccessors;
+        }
+
+        /**
+         * Group of plugins at <b>plugins.maven</b>
+         */
+        public MavenPluginAccessors getMaven() {
+            return paccForMavenPluginAccessors;
         }
 
     }
@@ -405,6 +413,20 @@ public class LibrariesForLibsInPluginsBlock extends AbstractExternalDependencyFa
          * This plugin was declared in catalog libs.versions.toml
          */
         public Provider<PluginDependency> getAndroid() { return createPlugin("kotlin.android"); }
+
+    }
+
+    public static class MavenPluginAccessors extends PluginFactory {
+
+        public MavenPluginAccessors(ProviderFactory providers, DefaultVersionCatalog config) { super(providers, config); }
+
+        /**
+         * Plugin provider for <b>maven.publish</b> with plugin id <b>maven-publish</b> and
+         * with <b>no version specified</b>
+         * <p>
+         * This plugin was declared in catalog libs.versions.toml
+         */
+        public Provider<PluginDependency> getPublish() { return createPlugin("maven.publish"); }
 
     }
 
