@@ -2,7 +2,6 @@ package com.embot.ebotui.componsable
 
 import android.graphics.Paint
 import android.graphics.Path
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
