@@ -47,7 +47,6 @@ class MainActivity : ComponentActivity() {
 }
 
 data class NavItem(
-    val index: Int,
     val label: String,
     val icon: ImageVector,
     val selected: Boolean = false
@@ -60,31 +59,26 @@ fun MainContent(modifier: Modifier = Modifier) {
     val items = remember {
         listOf(
             NavItem(
-                index = 0,
                 label = "Home",
                 icon = Icons.Outlined.Home,
                 selected = false
             ),
             NavItem(
-                index = 1,
                 label = "Home",
                 icon = Icons.Outlined.Search,
                 selected = false
             ),
             NavItem(
-                index = 2,
                 label = "Home",
                 icon = Icons.Outlined.Adb,
                 selected = false
             ),
             NavItem(
-                index = 3,
                 label = "Home",
                 icon = Icons.Outlined.Notifications,
                 selected = false
             ),
             NavItem(
-                index = 4,
                 label = "Home",
                 icon = Icons.Outlined.PersonOutline,
                 selected = false
@@ -96,19 +90,20 @@ fun MainContent(modifier: Modifier = Modifier) {
         bottomBar = {
             NavigationBar(
                 modifier = Modifier.fillMaxWidth(),
-                indexSelectedState = indexSelectedState,
+                selectedIndexState = indexSelectedState,
                 colors = NavigationDefaults.colors(
                     container = Color(0xFF48230d)
                 ),
             ) {
-                items.forEach { item ->
+                items.forEachIndexed { index, item ->
                     NavigationItem(
-                        selected = item.index == indexSelectedState.intValue,
+                        index = index,
+                        selectedIndexState = indexSelectedState,
                         colors = NavigationBarItemDefaults.colors(
                             indicatorColor = Color(0xFFf5b22d)
                         ),
-                        onItemClicked = {
-                            indexSelectedState.intValue = item.index
+                        onItemClicked = { index ->
+                            indexSelectedState.intValue = index
                         },
                         icon = {
                             Icon(

@@ -23,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.MutableIntState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -35,7 +36,9 @@ import androidx.compose.ui.draw.DrawResult
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.Layout
@@ -45,8 +48,13 @@ import androidx.compose.ui.unit.dp
 
 internal const val DEFAULT_MARGIN_CURVE = 60F
 internal const val DEFAULT_MARGIN_ITEM = 10F
+internal const val DEFAULT_NOTCH_ARC_ANGLE = -180f
 internal val DEFAULT_NOTCH_WIDTH = 30.dp
 internal val DEFAULT_LAYOUT_HEIGHT = 75.dp
+
+private val NavItemWindowInsets = WindowInsets().only(
+    WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
+)
 
 internal data class ItemData(
     val width: Int,
@@ -153,8 +161,8 @@ private fun CacheDrawScope.drawBackgroundNotch(
                 currentCenterX + notchWidth,
                 notchHeight,
             ),
-            -180f,
-            -180f,
+            DEFAULT_NOTCH_ARC_ANGLE,
+            DEFAULT_NOTCH_ARC_ANGLE,
             false
         )
         this.lineTo(currentCenterX + notchWidth, DEFAULT_MARGIN_CURVE)
@@ -185,14 +193,14 @@ private fun CacheDrawScope.drawBackgroundNotch(
 
 @Composable
 fun NavigationItem(
-    selected: Boolean,
+    index: Int,
+    selectedIndexState: MutableIntState,
     colors: ItemColor = NavigationBarItemDefaults.colors(),
-    windowInsets: WindowInsets = WindowInsets().only(
-        WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
-    ),
+    windowInsets: WindowInsets = NavItemWindowInsets,
     icon: @Composable () -> Unit,
-    onItemClicked: () -> Unit
+    onItemClicked: (index: Int) -> Unit
 ) {
+    val selected by remember { derivedStateOf { selectedIndexState.intValue == index } }
     val indicatorWidth = (DEFAULT_NOTCH_WIDTH.value * 1.9f - DEFAULT_MARGIN_ITEM).dp
     val height = DEFAULT_LAYOUT_HEIGHT + windowInsets.asPaddingValues().calculateBottomPadding()
     Column(
@@ -202,7 +210,7 @@ fun NavigationItem(
                 enabled = true,
                 indication = null,
                 interactionSource = null,
-                onClick = onItemClicked
+                onClick = { onItemClicked(index) }
             ),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
@@ -224,15 +232,16 @@ fun NavigationItem(
 @Composable
 fun NavigationBar(
     modifier: Modifier = Modifier,
-    indexSelectedState: MutableIntState,
+    selectedIndexState: MutableIntState,
     colors: NavigationBarColor = NavigationDefaults.colors(),
     content: @Composable () -> Unit,
 ) {
-    var centerNotchX by indexSelectedState
+    var centerNotchX by selectedIndexState
     val positions = remember { mutableStateListOf<ItemData>() }
 
     Layout(
         modifier = modifier
+            .graphicsLayer { compositingStrategy = CompositingStrategy.Auto }
             .drawWithCache {
                 val drawingMetaData = getDrawingMetaData(centerNotchX = centerNotchX)
                 drawBackgroundNotch(
@@ -263,19 +272,17 @@ fun NavigationBar(
 
         layout(constraints.maxWidth, height) {
             var x = 0
-            positions.clear()
-            itemsToPlace.forEach { placeable ->
+            if (positions.size != itemsToPlace.size) {
+                positions.clear()
+                repeat(itemsToPlace.size) { positions.add(ItemData(0, 0, Offset.Zero)) }
+            }
+            itemsToPlace.forEachIndexed { index, placeable ->
                 placeable.placeRelative(x, 0)
                 x += placeable.width
-                positions.add(
-                    ItemData(
-                        width = placeable.width,
-                        height = placeable.height,
-                        offset = Offset(
-                            x = x - placeable.width / 2f,
-                            y = placeable.height / 2f
-                        )
-                    )
+                positions[index] = ItemData(
+                    width = placeable.width,
+                    height = placeable.height,
+                    offset = Offset(x - placeable.width / 2f, placeable.height / 2f)
                 )
             }
         }
@@ -285,15 +292,17 @@ fun NavigationBar(
 @Preview(showBackground = true)
 @Composable
 fun NavigationBarPreview() {
+    val selectedIndexState = remember { mutableIntStateOf(1) }
     NavigationBar(
         modifier = Modifier.fillMaxWidth(),
-        indexSelectedState = remember { mutableIntStateOf(1) },
+        selectedIndexState = selectedIndexState,
         colors = NavigationDefaults.colors(
             container = Color(0xFF48230d)
         ),
     ) {
         NavigationItem(
-            selected = false,
+            index = 0,
+            selectedIndexState = selectedIndexState,
             colors = NavigationBarItemDefaults.colors(
                 indicatorColor = Color(0xFFf5b22d)
             ),
@@ -307,7 +316,8 @@ fun NavigationBarPreview() {
             }
         )
         NavigationItem(
-            selected = true,
+            index = 1,
+            selectedIndexState = selectedIndexState,
             colors = NavigationBarItemDefaults.colors(
                 indicatorColor = Color(0xFFf5b22d)
             ),
