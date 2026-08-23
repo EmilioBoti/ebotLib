@@ -6,15 +6,15 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBars
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AcUnit
 import androidx.compose.material.icons.outlined.Adb
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.PersonOutline
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -28,6 +28,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ebot.ebotview.ui.theme.EbotLibTheme
 import com.embot.ebotui.componsable.NavigationBar
+import com.embot.ebotui.componsable.NavigationBarItemDefaults
+import com.embot.ebotui.componsable.NavigationDefaults
 import com.embot.ebotui.componsable.NavigationItem
 
 class MainActivity : ComponentActivity() {
@@ -60,19 +62,31 @@ fun MainContent(modifier: Modifier = Modifier) {
             NavItem(
                 index = 0,
                 label = "Home",
-                icon = Icons.Outlined.AcUnit,
+                icon = Icons.Outlined.Home,
                 selected = false
             ),
             NavItem(
                 index = 1,
                 label = "Home",
-                icon = Icons.Outlined.Adb,
+                icon = Icons.Outlined.Search,
                 selected = false
             ),
             NavItem(
                 index = 2,
                 label = "Home",
                 icon = Icons.Outlined.Adb,
+                selected = false
+            ),
+            NavItem(
+                index = 3,
+                label = "Home",
+                icon = Icons.Outlined.Notifications,
+                selected = false
+            ),
+            NavItem(
+                index = 4,
+                label = "Home",
+                icon = Icons.Outlined.PersonOutline,
                 selected = false
             )
         )
@@ -81,16 +95,18 @@ fun MainContent(modifier: Modifier = Modifier) {
     Scaffold(
         bottomBar = {
             NavigationBar(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .windowInsetsPadding(insets = WindowInsets.systemBars),
-                notchWidth = 30.dp,
+                modifier = Modifier.fillMaxWidth(),
                 indexSelectedState = indexSelectedState,
+                colors = NavigationDefaults.colors(
+                    container = Color(0xFF48230d)
+                ),
             ) {
                 items.forEach { item ->
                     NavigationItem(
                         selected = item.index == indexSelectedState.intValue,
-                        notchWidth = 40.dp,
+                        colors = NavigationBarItemDefaults.colors(
+                            indicatorColor = Color(0xFFf5b22d)
+                        ),
                         onItemClicked = {
                             indexSelectedState.intValue = item.index
                         },
@@ -105,6 +121,7 @@ fun MainContent(modifier: Modifier = Modifier) {
                     )
                 }
             }
+
         }
     ) { paddingValues ->
         Column(

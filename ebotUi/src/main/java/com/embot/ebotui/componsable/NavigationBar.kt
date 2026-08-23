@@ -6,10 +6,14 @@ import android.graphics.RectF
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -17,13 +21,17 @@ import androidx.compose.material.icons.outlined.Abc
 import androidx.compose.material.icons.outlined.Adb
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.MutableIntState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.CacheDrawScope
+import androidx.compose.ui.draw.DrawResult
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -33,8 +41,12 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+
+internal const val DEFAULT_MARGIN_CURVE = 60F
+internal const val DEFAULT_MARGIN_ITEM = 10F
+internal val DEFAULT_NOTCH_WIDTH = 30.dp
+internal val DEFAULT_LAYOUT_HEIGHT = 75.dp
 
 internal data class ItemData(
     val width: Int,
@@ -42,28 +54,163 @@ internal data class ItemData(
     val offset: Offset
 )
 
+@Immutable
+class NavigationBarColor(
+    val container: Color,
+)
+
+@Immutable
+class ItemColor(
+    val indicatorColor: Color,
+)
+
+object NavigationBarItemDefaults {
+
+    @Composable
+    fun colors(
+        indicatorColor: Color = Color.Unspecified,
+    ): ItemColor {
+        return ItemColor(
+            indicatorColor = indicatorColor,
+        )
+    }
+
+}
+
+object NavigationDefaults {
+
+    @Composable
+    fun colors(
+        container: Color = Color.White,
+    ): NavigationBarColor {
+        return NavigationBarColor(
+            container = container
+        )
+    }
+
+}
+
+internal data class DrawingMetaData(
+    val centerNotchX: Int,
+    val totalWidth: Float,
+    val totalHeight: Float,
+    val notchWidth: Float,
+)
+
+private fun CacheDrawScope.getDrawingMetaData(
+    centerNotchX: Int
+): DrawingMetaData {
+    return DrawingMetaData(
+        centerNotchX = centerNotchX,
+        totalWidth = this.size.width,
+        totalHeight = this.size.height,
+        notchWidth = DEFAULT_NOTCH_WIDTH.toPx()
+    )
+}
+
+
+private fun CacheDrawScope.drawBackgroundNotch(
+    drawingMetaData: DrawingMetaData,
+    positions: List<ItemData>,
+    colors: NavigationBarColor,
+): DrawResult {
+    val containerColor = colors.container.toArgb()
+    val centerNotchX = drawingMetaData.centerNotchX
+    val totalWidth = drawingMetaData.totalWidth
+    val totalHeight = drawingMetaData.totalHeight
+    val notchWidth = drawingMetaData.notchWidth
+
+    val pathPaint = Paint().apply {
+        this.color = containerColor
+        this.isAntiAlias = true
+        this.strokeWidth = 8f
+        this.style = Paint.Style.FILL
+        this.setShadowLayer(
+            8f,
+            0f,
+            -1f,
+            android.graphics.Color.argb(80, 0, 0, 0)
+        )
+    }
+
+    val currentCenterX = positions[centerNotchX].offset.x
+    val minHeight = 0f
+    val notchHeight = this.size.height - this.size.height.times(0.3f) + DEFAULT_MARGIN_ITEM
+
+    val background = Path().apply {
+        this.moveTo(minHeight, minHeight)
+        this.lineTo(currentCenterX - notchWidth - DEFAULT_MARGIN_CURVE, minHeight)
+        this.quadTo(
+            currentCenterX - notchWidth,
+            minHeight,
+            currentCenterX - notchWidth,
+            DEFAULT_MARGIN_CURVE,
+        )
+        this.arcTo(
+            RectF(
+                currentCenterX - notchWidth,
+                minHeight,
+                currentCenterX + notchWidth,
+                notchHeight,
+            ),
+            -180f,
+            -180f,
+            false
+        )
+        this.lineTo(currentCenterX + notchWidth, DEFAULT_MARGIN_CURVE)
+        this.quadTo(
+            currentCenterX + notchWidth,
+            minHeight,
+            currentCenterX + notchWidth + DEFAULT_MARGIN_CURVE,
+            minHeight,
+        )
+        this.lineTo(totalWidth - minHeight, minHeight)
+        this.lineTo(
+            totalWidth - minHeight,
+            totalHeight - minHeight
+        )
+        this.lineTo(minHeight, totalHeight - minHeight)
+        this.close()
+    }
+    return onDrawBehind {
+        drawIntoCanvas { canvas ->
+            val nativeCanvas = canvas.nativeCanvas
+            nativeCanvas.drawPath(
+                background,
+                pathPaint
+            )
+        }
+    }
+}
+
 @Composable
 fun NavigationItem(
     selected: Boolean,
-    notchWidth: Dp,
+    colors: ItemColor = NavigationBarItemDefaults.colors(),
+    windowInsets: WindowInsets = WindowInsets().only(
+        WindowInsetsSides.Horizontal + WindowInsetsSides.Bottom
+    ),
     icon: @Composable () -> Unit,
     onItemClicked: () -> Unit
 ) {
-    val indicatorWidth = (notchWidth.value * 1.2f).dp
+    val indicatorWidth = (DEFAULT_NOTCH_WIDTH.value * 1.9f - DEFAULT_MARGIN_ITEM).dp
+    val height = DEFAULT_LAYOUT_HEIGHT + windowInsets.asPaddingValues().calculateBottomPadding()
     Column(
-        modifier = Modifier.clickable(
-            enabled = true,
-            indication = null,
-            interactionSource = null,
-            onClick = onItemClicked
-        ),
+        modifier = Modifier.height(height + height.times(0.04f))
+            .padding(top = height.times(0.08f))
+            .clickable(
+                enabled = true,
+                indication = null,
+                interactionSource = null,
+                onClick = onItemClicked
+            ),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Top
     ) {
         Column(
             modifier = Modifier.size(indicatorWidth)
                 .background(
-                    color = if (selected) Color(0xFFf5b22d) else Color.Transparent,
+                    color = if (selected) colors.indicatorColor else Color.Transparent,
                     shape = CircleShape
                 ),
             verticalArrangement = Arrangement.Center,
@@ -78,139 +225,79 @@ fun NavigationItem(
 fun NavigationBar(
     modifier: Modifier = Modifier,
     indexSelectedState: MutableIntState,
-    notchWidth: Dp,
-    content: @Composable () -> Unit
+    colors: NavigationBarColor = NavigationDefaults.colors(),
+    content: @Composable () -> Unit,
 ) {
     var centerNotchX by indexSelectedState
-    val positions: ArrayList<ItemData> = ArrayList()
+    val positions = remember { mutableStateListOf<ItemData>() }
 
-    Box(
-        modifier = modifier.height(75.dp)
+    Layout(
+        modifier = modifier
             .drawWithCache {
-                val color = Color.White.toArgb()
-                val pathPaint = Paint().apply {
-                    this.color = color
-                    this.isAntiAlias = true
-                    this.strokeWidth = 8f
-                    this.style = Paint.Style.FILL
-                    this.setShadowLayer(
-                        12f,
-                        0f,
-                        -1f,
-                        android.graphics.Color.argb(80, 0, 0, 0)
-                    )
-                }
-
-                val poX = positions[centerNotchX]
-                val marginXCurve = 60f
-                val marginYCurve = 60f
-                val minHeight = 0f
-                val width = notchWidth.toPx()
-                val notchHeight = this.size.height - this.size.height.times(0.14f)
-
-                val background = Path().apply {
-                    this.moveTo(minHeight, minHeight)
-                    this.lineTo(poX.offset.x - width - marginXCurve, minHeight)
-                    this.quadTo(
-                        poX.offset.x - width,
-                        minHeight,
-                        poX.offset.x - width,
-                        marginYCurve,
-                    )
-                    this.arcTo(
-                        RectF(
-                            poX.offset.x - width,
-                            minHeight,
-                            poX.offset.x + width,
-                            notchHeight,
-                        ),
-                        -180f,
-                        -180f,
-                        false
-                    )
-                    this.lineTo(poX.offset.x + width, marginYCurve)
-                    this.quadTo(
-                        poX.offset.x + width,
-                        minHeight,
-                        poX.offset.x + width + marginXCurve,
-                        minHeight,
-                    )
-                    this.lineTo(this@drawWithCache.size.width - minHeight, minHeight)
-                    this.lineTo(
-                        this@drawWithCache.size.width - minHeight,
-                        this@drawWithCache.size.height - minHeight
-                    )
-                    this.lineTo(minHeight, this@drawWithCache.size.height - minHeight)
-                    this.close()
-                }
-                onDrawBehind {
-                    drawIntoCanvas { canvas ->
-                        val nativeCanvas = canvas.nativeCanvas
-                        nativeCanvas.drawPath(
-                            background,
-                            pathPaint
-                        )
-                    }
-                }
+                val drawingMetaData = getDrawingMetaData(centerNotchX = centerNotchX)
+                drawBackgroundNotch(
+                    drawingMetaData = drawingMetaData,
+                    positions = positions,
+                    colors = colors
+                )
             },
-        contentAlignment = Alignment.Center
-    ) {
-        Layout(
-            content = content
-        ) { measurables, constraints ->
-            val height = measurables.maxOf { it.minIntrinsicHeight(constraints.maxHeight) }
-            val widths = measurables.map { item -> item.maxIntrinsicWidth(constraints.maxWidth) }
-            val totalWidth = widths.sum()
+        content = content
+    ) { measurables, constraints ->
+        val height = measurables.maxOf { it.minIntrinsicHeight(constraints.maxHeight) }
+        val widths = measurables.map { item -> item.maxIntrinsicWidth(constraints.maxWidth) }
+        val totalWidth = widths.sum()
 
-            var itemsToPlace: List<Placeable>
+        var itemsToPlace: List<Placeable>
 
-            if (totalWidth > constraints.maxWidth) {
-                val itemWidth = constraints.maxWidth / measurables.size
-                val itemConstraints = constraints.copy(minWidth = itemWidth, maxWidth = itemWidth)
-                itemsToPlace = measurables.map { it.measure(itemConstraints) }
-            } else {
-                val availableSpace = (constraints.maxWidth - totalWidth) / measurables.size
-                itemsToPlace = measurables.mapIndexed { index, measurable ->
-                    val itemWidth = widths[index] + availableSpace
-                    measurable.measure(constraints.copy(minWidth = itemWidth, maxWidth = itemWidth))
-                }
-            }
-
-            layout(constraints.maxWidth, height) {
-                var x = 0
-                itemsToPlace.forEach { placeable ->
-                    placeable.placeRelative(x, 0)
-                    x += placeable.width
-                    positions.add(
-                        ItemData(
-                            width = placeable.width,
-                            height = placeable.height,
-                            offset = Offset(
-                                x = x - placeable.width / 2f,
-                                y = placeable.height / 2f
-                            )
-                        )
-                    )
-                }
+        if (totalWidth > constraints.maxWidth) {
+            val itemWidth = constraints.maxWidth / measurables.size
+            val itemConstraints = constraints.copy(minWidth = itemWidth, maxWidth = itemWidth)
+            itemsToPlace = measurables.map { it.measure(itemConstraints) }
+        } else {
+            val availableSpace = (constraints.maxWidth - totalWidth) / measurables.size
+            itemsToPlace = measurables.mapIndexed { index, measurable ->
+                val itemWidth = widths[index] + availableSpace
+                measurable.measure(constraints.copy(minWidth = itemWidth, maxWidth = itemWidth))
             }
         }
 
+        layout(constraints.maxWidth, height) {
+            var x = 0
+            positions.clear()
+            itemsToPlace.forEach { placeable ->
+                placeable.placeRelative(x, 0)
+                x += placeable.width
+                positions.add(
+                    ItemData(
+                        width = placeable.width,
+                        height = placeable.height,
+                        offset = Offset(
+                            x = x - placeable.width / 2f,
+                            y = placeable.height / 2f
+                        )
+                    )
+                )
+            }
+        }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun NavigationBarPreview() {
-    val notchWidth = 30.dp
     NavigationBar(
         modifier = Modifier.fillMaxWidth(),
-        notchWidth = notchWidth,
-        indexSelectedState = remember { mutableIntStateOf(1) }
+        indexSelectedState = remember { mutableIntStateOf(1) },
+        colors = NavigationDefaults.colors(
+            container = Color(0xFF48230d)
+        ),
     ) {
         NavigationItem(
             selected = false,
+            colors = NavigationBarItemDefaults.colors(
+                indicatorColor = Color(0xFFf5b22d)
+            ),
             onItemClicked = {},
-            notchWidth = notchWidth,
             icon = {
                 Icon(
                     modifier = Modifier.size(24.dp),
@@ -221,8 +308,10 @@ fun NavigationBarPreview() {
         )
         NavigationItem(
             selected = true,
+            colors = NavigationBarItemDefaults.colors(
+                indicatorColor = Color(0xFFf5b22d)
+            ),
             onItemClicked = {},
-            notchWidth = notchWidth,
             icon = {
                 Icon(
                     modifier = Modifier.size(24.dp),
