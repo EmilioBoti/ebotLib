@@ -28,7 +28,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ebot.ebotview.ui.theme.EbotLibTheme
 import com.embot.ebotui.componsable.NavigationBar
-import com.embot.ebotui.componsable.NavigationBarItemDefaults
 import com.embot.ebotui.componsable.NavigationDefaults
 import com.embot.ebotui.componsable.NavigationItem
 
@@ -91,17 +90,15 @@ fun MainContent(modifier: Modifier = Modifier) {
             NavigationBar(
                 modifier = Modifier.fillMaxWidth(),
                 selectedIndexState = indexSelectedState,
+                animationDuration = 500,
                 colors = NavigationDefaults.colors(
-                    container = Color(0xFF48230d)
+                    container = Color(0xFF48230d),
+                    indicatorColor = Color(0xFFf5b22d)
                 ),
             ) {
                 items.forEachIndexed { index, item ->
                     NavigationItem(
                         index = index,
-                        selectedIndexState = indexSelectedState,
-                        colors = NavigationBarItemDefaults.colors(
-                            indicatorColor = Color(0xFFf5b22d)
-                        ),
                         onItemClicked = { index ->
                             indexSelectedState.intValue = index
                         },

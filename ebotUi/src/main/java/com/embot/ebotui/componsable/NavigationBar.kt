@@ -3,7 +3,10 @@ package com.embot.ebotui.componsable
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
-import androidx.compose.foundation.background
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,20 +18,21 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Abc
 import androidx.compose.material.icons.outlined.Adb
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableIntState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.CacheDrawScope
@@ -49,6 +53,7 @@ import androidx.compose.ui.unit.dp
 internal const val DEFAULT_MARGIN_CURVE = 60F
 internal const val DEFAULT_MARGIN_ITEM = 10F
 internal const val DEFAULT_NOTCH_ARC_ANGLE = -180f
+internal const val DEFAULT_EDGE = 0f
 internal val DEFAULT_NOTCH_WIDTH = 30.dp
 internal val DEFAULT_LAYOUT_HEIGHT = 75.dp
 
@@ -65,51 +70,39 @@ internal data class ItemData(
 @Immutable
 class NavigationBarColor(
     val container: Color,
+    val indicatorColor: Color
 )
-
-@Immutable
-class ItemColor(
-    val indicatorColor: Color,
-)
-
-object NavigationBarItemDefaults {
-
-    @Composable
-    fun colors(
-        indicatorColor: Color = Color.Unspecified,
-    ): ItemColor {
-        return ItemColor(
-            indicatorColor = indicatorColor,
-        )
-    }
-
-}
 
 object NavigationDefaults {
 
     @Composable
     fun colors(
         container: Color = Color.White,
+        indicatorColor: Color = Color.Unspecified,
     ): NavigationBarColor {
         return NavigationBarColor(
-            container = container
+            container = container,
+            indicatorColor = indicatorColor
         )
     }
 
 }
 
 internal data class DrawingMetaData(
-    val centerNotchX: Int,
+    val centerNotchX: Animatable<Float, AnimationVector1D>,
+    val centerNotchY: Float,
     val totalWidth: Float,
     val totalHeight: Float,
     val notchWidth: Float,
 )
 
 private fun CacheDrawScope.getDrawingMetaData(
-    centerNotchX: Int
+    centerNotchX: Animatable<Float, AnimationVector1D>,
+    centerNotchY: Float,
 ): DrawingMetaData {
     return DrawingMetaData(
         centerNotchX = centerNotchX,
+        centerNotchY = centerNotchY,
         totalWidth = this.size.width,
         totalHeight = this.size.height,
         notchWidth = DEFAULT_NOTCH_WIDTH.toPx()
@@ -119,11 +112,9 @@ private fun CacheDrawScope.getDrawingMetaData(
 
 private fun CacheDrawScope.drawBackgroundNotch(
     drawingMetaData: DrawingMetaData,
-    positions: List<ItemData>,
     colors: NavigationBarColor,
 ): DrawResult {
     val containerColor = colors.container.toArgb()
-    val centerNotchX = drawingMetaData.centerNotchX
     val totalWidth = drawingMetaData.totalWidth
     val totalHeight = drawingMetaData.totalHeight
     val notchWidth = drawingMetaData.notchWidth
@@ -140,24 +131,24 @@ private fun CacheDrawScope.drawBackgroundNotch(
             android.graphics.Color.argb(80, 0, 0, 0)
         )
     }
-
-    val currentCenterX = positions[centerNotchX].offset.x
-    val minHeight = 0f
+    val currentCenterX = drawingMetaData.centerNotchX.value
+    val currentCenterY = drawingMetaData.centerNotchY
     val notchHeight = this.size.height - this.size.height.times(0.3f) + DEFAULT_MARGIN_ITEM
+    val indicatorOffset = Offset(x = currentCenterX, y = currentCenterY - currentCenterY * currentCenterY.times(0.0022f))
 
     val background = Path().apply {
-        this.moveTo(minHeight, minHeight)
-        this.lineTo(currentCenterX - notchWidth - DEFAULT_MARGIN_CURVE, minHeight)
+        this.moveTo(DEFAULT_EDGE, DEFAULT_EDGE)
+        this.lineTo(currentCenterX - notchWidth - DEFAULT_MARGIN_CURVE, DEFAULT_EDGE)
         this.quadTo(
             currentCenterX - notchWidth,
-            minHeight,
+            DEFAULT_EDGE,
             currentCenterX - notchWidth,
             DEFAULT_MARGIN_CURVE,
         )
         this.arcTo(
             RectF(
                 currentCenterX - notchWidth,
-                minHeight,
+                DEFAULT_EDGE,
                 currentCenterX + notchWidth,
                 notchHeight,
             ),
@@ -168,16 +159,16 @@ private fun CacheDrawScope.drawBackgroundNotch(
         this.lineTo(currentCenterX + notchWidth, DEFAULT_MARGIN_CURVE)
         this.quadTo(
             currentCenterX + notchWidth,
-            minHeight,
+            DEFAULT_EDGE,
             currentCenterX + notchWidth + DEFAULT_MARGIN_CURVE,
-            minHeight,
+            DEFAULT_EDGE,
         )
-        this.lineTo(totalWidth - minHeight, minHeight)
+        this.lineTo(totalWidth - DEFAULT_EDGE, DEFAULT_EDGE)
         this.lineTo(
-            totalWidth - minHeight,
-            totalHeight - minHeight
+            totalWidth - DEFAULT_EDGE,
+            totalHeight - DEFAULT_EDGE
         )
-        this.lineTo(minHeight, totalHeight - minHeight)
+        this.lineTo(DEFAULT_EDGE, totalHeight - DEFAULT_EDGE)
         this.close()
     }
     return onDrawBehind {
@@ -188,19 +179,21 @@ private fun CacheDrawScope.drawBackgroundNotch(
                 pathPaint
             )
         }
+        drawCircle(
+            color = colors.indicatorColor,
+            radius = notchWidth - notchWidth * 0.14f,
+            center = indicatorOffset
+        )
     }
 }
 
 @Composable
 fun NavigationItem(
     index: Int,
-    selectedIndexState: MutableIntState,
-    colors: ItemColor = NavigationBarItemDefaults.colors(),
     windowInsets: WindowInsets = NavItemWindowInsets,
     icon: @Composable () -> Unit,
     onItemClicked: (index: Int) -> Unit
 ) {
-    val selected by remember { derivedStateOf { selectedIndexState.intValue == index } }
     val indicatorWidth = (DEFAULT_NOTCH_WIDTH.value * 1.9f - DEFAULT_MARGIN_ITEM).dp
     val height = DEFAULT_LAYOUT_HEIGHT + windowInsets.asPaddingValues().calculateBottomPadding()
     Column(
@@ -216,11 +209,7 @@ fun NavigationItem(
         verticalArrangement = Arrangement.Top
     ) {
         Column(
-            modifier = Modifier.size(indicatorWidth)
-                .background(
-                    color = if (selected) colors.indicatorColor else Color.Transparent,
-                    shape = CircleShape
-                ),
+            modifier = Modifier.size(indicatorWidth),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -234,19 +223,35 @@ fun NavigationBar(
     modifier: Modifier = Modifier,
     selectedIndexState: MutableIntState,
     colors: NavigationBarColor = NavigationDefaults.colors(),
+    animationDuration: Int = 600,
     content: @Composable () -> Unit,
 ) {
-    var centerNotchX by selectedIndexState
+    var centerNotchY by remember { mutableFloatStateOf(0f) }
     val positions = remember { mutableStateListOf<ItemData>() }
+    val animatedOffsetX = remember { Animatable(0f) }
+
+    LaunchedEffect(Unit) {
+        snapshotFlow { selectedIndexState.intValue }
+            .collect { index ->
+            val target = positions.getOrNull(index) ?: return@collect
+            centerNotchY = target.offset.y
+            animatedOffsetX.animateTo(
+                targetValue = target.offset.x,
+                animationSpec = tween(
+                    durationMillis = animationDuration,
+                    easing = FastOutSlowInEasing
+                )
+            )
+        }
+    }
 
     Layout(
         modifier = modifier
             .graphicsLayer { compositingStrategy = CompositingStrategy.Auto }
             .drawWithCache {
-                val drawingMetaData = getDrawingMetaData(centerNotchX = centerNotchX)
+                val drawingMetaData = getDrawingMetaData(centerNotchX = animatedOffsetX, centerNotchY = centerNotchY)
                 drawBackgroundNotch(
                     drawingMetaData = drawingMetaData,
-                    positions = positions,
                     colors = colors
                 )
             },
@@ -297,15 +302,12 @@ fun NavigationBarPreview() {
         modifier = Modifier.fillMaxWidth(),
         selectedIndexState = selectedIndexState,
         colors = NavigationDefaults.colors(
-            container = Color(0xFF48230d)
+            container = Color(0xFF48230d),
+            indicatorColor = Color(0xFFf5b22d)
         ),
     ) {
         NavigationItem(
             index = 0,
-            selectedIndexState = selectedIndexState,
-            colors = NavigationBarItemDefaults.colors(
-                indicatorColor = Color(0xFFf5b22d)
-            ),
             onItemClicked = {},
             icon = {
                 Icon(
@@ -317,10 +319,6 @@ fun NavigationBarPreview() {
         )
         NavigationItem(
             index = 1,
-            selectedIndexState = selectedIndexState,
-            colors = NavigationBarItemDefaults.colors(
-                indicatorColor = Color(0xFFf5b22d)
-            ),
             onItemClicked = {},
             icon = {
                 Icon(
