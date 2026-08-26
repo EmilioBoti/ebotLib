@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.maven.publish)
 }
 
 android {
@@ -22,6 +23,45 @@ android {
         compose = true
     }
 
+    mavenPublishing {
+        coordinates(
+            groupId = "io.github.emilioboti",
+            artifactId = "fun-components",
+            version = "1.0.1"
+        )
+
+        pom {
+            name.set("ebotUI")
+            description.set("Library to provide UI compose component for Android native app")
+            inceptionYear.set("2026")
+            url.set("https://github.com/EmilioBoti/ebotLib")
+
+            licenses {
+                license {
+                    name.set("MIT")
+                    url.set("https://opensource.org/license/mit")
+                }
+            }
+
+            developers {
+                developer {
+                    id.set("ebot")
+                    name.set("Emilio Botier")
+                    email.set("emiliobotier@gmail.com")
+                }
+            }
+            scm {
+                connection.set("scm:git:git://github.com/EmilioBoti/ebotLib.git")
+                developerConnection.set("scm:git:ssh://github.com/EmilioBoti/ebotLib.git")
+                url.set("https://github.com/EmilioBoti/ebotLib")
+            }
+        }
+
+        publishToMavenCentral(automaticRelease = true)
+
+        signAllPublications()
+    }
+
 }
 
 dependencies {
@@ -41,5 +81,19 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.material3)
+}
 
+afterEvaluate {
+    publishing {
+        publications.withType<MavenPublication>().configureEach {
+            versionMapping {
+                usage("java-api") {
+                    fromResolutionResult()
+                }
+                usage("java-runtime") {
+                    fromResolutionResult()
+                }
+            }
+        }
+    }
 }
