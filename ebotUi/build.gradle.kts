@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "com.embot.ebotui"
+    namespace = "com.ebot.ui"
     compileSdk {
         version = release(37)
     }
@@ -26,8 +26,8 @@ android {
     mavenPublishing {
         coordinates(
             groupId = "io.github.emilioboti",
-            artifactId = "fun-components",
-            version = "1.0.1"
+            artifactId = "ebot-ui",
+            version = "1.0.2"
         )
 
         pom {

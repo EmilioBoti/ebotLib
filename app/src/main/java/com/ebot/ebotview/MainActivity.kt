@@ -27,9 +27,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ebot.ebotview.ui.theme.EbotLibTheme
-import com.embot.ebotui.componsable.NavigationBar
-import com.embot.ebotui.componsable.NavigationDefaults
-import com.embot.ebotui.componsable.NavigationItem
+import com.ebot.ui.navigation.NavigationBar
+import com.ebot.ui.navigation.NavigationDefaults
+import com.ebot.ui.navigation.NavigationItem
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

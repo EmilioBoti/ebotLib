@@ -1,4 +1,4 @@
-package com.embot.ebotui.componsable
+package com.ebot.ui.navigation
 
 import android.graphics.Paint
 import android.graphics.Path

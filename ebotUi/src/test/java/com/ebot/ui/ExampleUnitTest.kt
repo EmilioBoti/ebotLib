@@ -1,4 +1,4 @@
-package com.embot.ebotui
+package com.ebot.ui
 
 import org.junit.Test
 

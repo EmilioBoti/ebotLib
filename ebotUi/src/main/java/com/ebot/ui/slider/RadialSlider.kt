@@ -1,4 +1,4 @@
-package com.embot.ebotui.componsable
+package com.ebot.ui.slider
 
 import android.graphics.Paint
 import android.graphics.Path
@@ -96,7 +96,7 @@ fun Offset.calculateProgress(
 }
 
 @Composable
-fun SliderRing(
+fun RadialSlider(
     modifier: Modifier = Modifier,
     progress: Float = 0f,
     trackWidth: Dp = 8.dp,
@@ -246,8 +246,8 @@ fun SliderRing(
 
 @Preview(showBackground = true)
 @Composable
-fun SliderRingPreview() {
-    SliderRing(
+fun RadialSliderPreview() {
+    RadialSlider(
         modifier = Modifier.size(300.dp)
     ) {
         Column(
