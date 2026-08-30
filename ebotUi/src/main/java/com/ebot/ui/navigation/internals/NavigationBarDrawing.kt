@@ -15,7 +15,6 @@ internal fun CacheDrawScope.drawBackgroundNotch(
     colors: NavigationBarColor,
 ): DrawResult {
     val containerColor = colors.container.toArgb()
-    val notchWidth = drawingMetaData.notchWidth
 
     val pathPaint = Paint().apply {
         this.color = containerColor
@@ -30,8 +29,14 @@ internal fun CacheDrawScope.drawBackgroundNotch(
         )
     }
 
-    val pathGeometry = calculateNotchPathGeometry(drawingMetaData = drawingMetaData)
-    val backgroundNotchPath = createNavigationBarPath(pathGeometry)
+    val pathGeometry = calculateNotchPathCoordinates(drawingMetaData = drawingMetaData)
+    val backgroundNotchPath = createNavigationBarPath(pathGeometry = pathGeometry)
+    val indicatorCoordinates = calculateIndicatorCoordinates(
+        notchWidth = drawingMetaData.notchWidth,
+        currentCenterX = drawingMetaData.centerNotchX,
+        currentCenterY = drawingMetaData.centerNotchY,
+        margin = 0.14f,
+    )
 
     return onDrawBehind {
         drawIntoCanvas { canvas ->
@@ -43,8 +48,8 @@ internal fun CacheDrawScope.drawBackgroundNotch(
         }
         drawCircle(
             color = colors.indicatorColor,
-            radius = notchWidth - notchWidth * 0.14f,
-            center = pathGeometry.indicatorOffset
+            radius = indicatorCoordinates.radius,
+            center = indicatorCoordinates.offset
         )
     }
 }

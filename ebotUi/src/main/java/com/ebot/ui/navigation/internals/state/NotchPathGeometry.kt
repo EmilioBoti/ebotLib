@@ -1,7 +1,5 @@
 package com.ebot.ui.navigation.internals.state
 
-import androidx.compose.ui.geometry.Offset
-
 internal data class NotchPathGeometry(
     val originX: Float,
     val originY: Float,
@@ -26,6 +24,5 @@ internal data class NotchPathGeometry(
     val xP4: Float,
     val yP4: Float,
     val xP5: Float,
-    val yP5: Float,
-    val indicatorOffset: Offset
+    val yP5: Float
 )

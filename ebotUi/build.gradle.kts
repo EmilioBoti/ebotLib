@@ -65,12 +65,11 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.appcompat)
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.material)
-    testImplementation(libs.junit)
+    // TESTING COMPOSE
+    testImplementation(libs.androidx.compose.ui.test.manifest)
+    testImplementation(libs.androidx.compose.ui.test.junit4)
+    testImplementation(libs.kotlin.test)
     androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(libs.androidx.junit)
 
     // COMPOSE
     implementation(libs.androidx.compose.foundation)

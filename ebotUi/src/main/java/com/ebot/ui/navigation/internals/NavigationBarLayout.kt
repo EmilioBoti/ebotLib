@@ -21,6 +21,8 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.unit.Constraints
+import com.ebot.ui.navigation.DEFAULT_MARGIN_CURVE
+import com.ebot.ui.navigation.DEFAULT_MARGIN_ITEM
 import com.ebot.ui.navigation.DEFAULT_NOTCH_WIDTH
 import com.ebot.ui.navigation.NavigationBarColor
 import com.ebot.ui.navigation.NavigationDefaults
@@ -75,11 +77,13 @@ internal fun NavigationBarLayout(
             .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
             .drawWithCache {
                 val drawingMetaData = NavigationBarMetric(
-                    centerNotchX = animatedOffsetX,
+                    centerNotchX = animatedOffsetX.value,
                     centerNotchY = centerNotchY,
                     totalWidth = this.size.width,
                     totalHeight = this.size.height,
-                    notchWidth = DEFAULT_NOTCH_WIDTH.toPx()
+                    notchWidth = DEFAULT_NOTCH_WIDTH.toPx(),
+                    itemMargin = DEFAULT_MARGIN_ITEM,
+                    curve = DEFAULT_MARGIN_CURVE
                 )
                 drawBackgroundNotch(
                     drawingMetaData = drawingMetaData,

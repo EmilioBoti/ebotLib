@@ -2,35 +2,32 @@ package com.ebot.ui.navigation.internals
 
 import androidx.compose.ui.geometry.Offset
 import com.ebot.ui.navigation.DEFAULT_EDGE
-import com.ebot.ui.navigation.DEFAULT_MARGIN_CURVE
-import com.ebot.ui.navigation.DEFAULT_MARGIN_ITEM
+import com.ebot.ui.navigation.internals.state.IndicatorCoordinate
 import com.ebot.ui.navigation.internals.state.NavigationBarMetric
 import com.ebot.ui.navigation.internals.state.NotchPathGeometry
 
-internal fun calculateNotchPathGeometry(drawingMetaData: NavigationBarMetric): NotchPathGeometry {
-    val currentCenterX = drawingMetaData.centerNotchX.value
-    val currentCenterY = drawingMetaData.centerNotchY
-    val notchHeight = drawingMetaData.totalHeight - drawingMetaData.totalHeight.times(0.3f) + DEFAULT_MARGIN_ITEM
-    val indicatorOffset = Offset(x = currentCenterX, y = currentCenterY - currentCenterY * currentCenterY.times(0.0022f))
+internal fun calculateNotchPathCoordinates(drawingMetaData: NavigationBarMetric): NotchPathGeometry {
+    val currentCenterX = drawingMetaData.centerNotchX
+    val notchHeight = drawingMetaData.totalHeight - drawingMetaData.totalHeight.times(0.3f) + drawingMetaData.itemMargin
 
     return NotchPathGeometry(
         originX = DEFAULT_EDGE,
         originY = DEFAULT_EDGE,
-        xP1 = currentCenterX - drawingMetaData.notchWidth - DEFAULT_MARGIN_CURVE,
+        xP1 = currentCenterX - drawingMetaData.notchWidth - drawingMetaData.curve,
         yP1 = DEFAULT_EDGE,
         leftCurveControlX = currentCenterX - drawingMetaData.notchWidth,
         leftCurveControlY = DEFAULT_EDGE,
         leftCurveX = currentCenterX - drawingMetaData.notchWidth,
-        leftCurveY = DEFAULT_MARGIN_CURVE,
+        leftCurveY = drawingMetaData.curve,
         arcLeft = currentCenterX - drawingMetaData.notchWidth,
         arcTop = DEFAULT_EDGE,
         arcRight = currentCenterX + drawingMetaData.notchWidth,
         arcBottom = notchHeight,
         xP2 = currentCenterX + drawingMetaData.notchWidth,
-        yP2 = DEFAULT_MARGIN_CURVE,
+        yP2 = drawingMetaData.curve,
         rightCurveControlX = currentCenterX + drawingMetaData.notchWidth,
         rightCurveControlY = DEFAULT_EDGE,
-        rightCurveX = currentCenterX + drawingMetaData.notchWidth + DEFAULT_MARGIN_CURVE,
+        rightCurveX = currentCenterX + drawingMetaData.notchWidth + drawingMetaData.curve,
         rightCurveY = DEFAULT_EDGE,
         xP3 = drawingMetaData.totalWidth - DEFAULT_EDGE,
         yP3 = DEFAULT_EDGE,
@@ -38,7 +35,22 @@ internal fun calculateNotchPathGeometry(drawingMetaData: NavigationBarMetric): N
         yP4 = drawingMetaData.totalHeight - DEFAULT_EDGE,
         xP5 = DEFAULT_EDGE,
         yP5 = drawingMetaData.totalHeight - DEFAULT_EDGE,
-        indicatorOffset = indicatorOffset
+    )
+}
+
+/**
+ * @param margin value from 0.0 to 1.0
+ */
+internal fun calculateIndicatorCoordinates(
+    notchWidth: Float,
+    currentCenterX: Float,
+    currentCenterY: Float,
+    margin: Float,
+): IndicatorCoordinate {
+    val indicatorOffset = Offset(x = currentCenterX, y = currentCenterY - currentCenterY * currentCenterY.times(0.0022f))
+    return IndicatorCoordinate(
+        radius = notchWidth - notchWidth * margin.coerceIn(0f, 1f),
+        offset = indicatorOffset
     )
 }
 
