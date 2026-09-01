@@ -1,5 +1,7 @@
 package com.ebot.ui.navigation.internals
 
+import com.ebot.ui.navigation.DEFAULT_MARGIN_CURVE
+import com.ebot.ui.navigation.DEFAULT_MARGIN_ITEM
 import com.ebot.ui.navigation.internals.state.NavigationBarMetric
 import com.ebot.ui.navigation.internals.state.NotchPathGeometry
 import org.junit.Before
@@ -11,8 +13,8 @@ class NavigationBarCalculationTest {
     private lateinit var metrics: NavigationBarMetric
 
     companion object {
-        const val MARGIN_ITEM = 10f
-        const val CURVE_NOTCH = 60f
+        const val MARGIN_ITEM = DEFAULT_MARGIN_ITEM
+        const val CURVE_NOTCH = DEFAULT_MARGIN_CURVE
     }
 
     @Before
