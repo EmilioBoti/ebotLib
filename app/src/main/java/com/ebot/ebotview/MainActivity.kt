@@ -30,7 +30,7 @@ import com.ebot.ebotview.presentation.screens.ScreenFive
 import com.ebot.ebotview.presentation.screens.ScreenFour
 import com.ebot.ebotview.presentation.screens.ScreenOne
 import com.ebot.ebotview.presentation.screens.ScreenThree
-import com.ebot.ebotview.presentation.screens.ScreenTwo
+import com.ebot.ebotview.presentation.screens.RadialSliderScreen
 import com.ebot.ebotview.ui.theme.EbotLibTheme
 import com.ebot.ui.navigation.NavigationBar
 import com.ebot.ui.navigation.NavigationDefaults
@@ -137,7 +137,7 @@ fun MainContent(modifier: Modifier = Modifier) {
     ) { paddingValues ->
         when(indexSelectedState) {
             IdentifierMenu.Item1 -> ScreenOne(modifier = Modifier.background(Color.Red))
-            IdentifierMenu.Item2 -> ScreenTwo(modifier = Modifier.background(Color.Blue))
+            IdentifierMenu.Item2 -> RadialSliderScreen()
             IdentifierMenu.Item3 -> ScreenThree(modifier = Modifier.background(Color.Green))
             IdentifierMenu.Item4 -> ScreenFour(modifier = Modifier.background(Color.Magenta))
             IdentifierMenu.Item5 -> ScreenFive(modifier = Modifier.background(Color.Cyan))
