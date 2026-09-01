@@ -22,3 +22,4 @@ dependencyResolutionManagement {
 rootProject.name = "ebotview"
 include(":app")
 include(":ebotlib")
+include(":ebotUi")

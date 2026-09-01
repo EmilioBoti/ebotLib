@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="SliderSpinner">
+        <attr name="trackProgress" format="float"/>
+        <attr name="trackProgressColor" format="color"/>
+        <attr name="dashLinesWidth" format="float"/>
+        <attr name="value" format="string"/>
+        <attr name="valueSize" format="dimension"/>
+        <attr name="trackWidth" format="dimension"/>
+        <attr name="spinnerShadow" format="float"/>
+        <attr name="progressShadow" format="float"/>
+        <attr name="icon" format="reference"/>
+        <attr name="iconSize" format="dimension"/>
+        <attr name="iconColor" format="color"/>
+        <attr name="isOn" format="boolean"/>
+        <attr name="font" format="reference"/>
+        <attr name="units" format="enum">
+            <enum name="celsius" value="0"/>
+            <enum name="fahrenheit" value="1"/>
+            <enum name="percent" value="2"/>
+        </attr>
+    </declare-styleable>
+
+    <declare-styleable name="EllipseSlider">
+        <attr name="progressValue" format="float"/>
+        <attr name="minValue" format="float"/>
+        <attr name="maxValue" format="float"/>
+        <attr name="progressTint" format="color"/>
+        <attr name="ellipseWidth" format="dimension"/>
+        <attr name="thumbTint" format="color"/>
+        <attr name="thumbRadius" format="dimension"/>
+    </declare-styleable>
+
+</resources>

@@ -1,11 +1,11 @@
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.maven.publish)
 }
 
 android {
     namespace = "com.ebot.ebotlib"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         minSdk = 24
@@ -27,9 +27,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
 }
 
 dependencies {
@@ -41,3 +38,20 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }
+
+//implementation '<<groupId>>:<<artifactId>>:<<tag>>'
+//implementation 'com.ebot:ebotLib:<<tag>>'
+
+//publishing {
+//    publications {
+//        register<MavenPublication>("release") {
+//            groupId = "com.github.EmilioBoti"
+//            artifactId = "ebotLib"
+//            version = "0.0.1"
+//
+//            afterEvaluate {
+//                from(components["release"])
+//            }
+//        }
+//    }
+//}

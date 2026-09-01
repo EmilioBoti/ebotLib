@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="off_white">#E4E4E0</color>
+    <color name="neutral">#FFFFFF</color>
+    <color name="neutral_01">#F0F2F5</color>
+    <color name="neutral_02">#D5D6D6</color>
+    <color name="neutral_03">#757575</color>
+    <color name="neutral_04">#121313</color>
+    <color name="neutral_05">#F5F5F5</color>
+    <color name="brand_01">#5AA2D5</color>
+    <color name="brand_02">#0061A0</color>
+    <color name="brand_03">#002740</color>
+    <color name="palette_01">#129EFF</color>
+</resources>

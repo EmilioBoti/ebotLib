@@ -10,11 +10,14 @@ import androidx.annotation.RequiresApi
 import kotlin.math.sqrt
 
 
-open class BaseView @JvmOverloads constructor(
+abstract class BaseView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
 ): View(context, attrs, defStyleAttr) {
+
+
+    protected var cacheInvalidated = true
 
 
     @RequiresApi(Build.VERSION_CODES.O_MR1)
