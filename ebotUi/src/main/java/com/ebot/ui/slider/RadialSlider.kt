@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.center
 import androidx.compose.ui.unit.dp
 import com.ebot.ui.slider.internals.SliderColor
+import com.ebot.ui.slider.internals.SliderBrush
 import com.ebot.ui.slider.internals.calculateDashCoordinates
 import com.ebot.ui.slider.internals.calculateProgress
 import com.ebot.ui.slider.internals.createRadialSliderDashPath
@@ -40,6 +41,7 @@ fun RadialSlider(
     trackWidth: Dp = 8.dp,
     dashWidth: Dp = 2.dp,
     colors: SliderColor = SliderStyleDefault.sliderColor(),
+    brush: SliderBrush? = null,
     onChange: (progress: Float) -> Unit = {},
     content: @Composable () -> Unit
 ) {
@@ -70,7 +72,11 @@ fun RadialSlider(
                 val ringPaint = createShadowFillPaint(colors.ringColor)
                 val dashPaint = createStrokePaint(colors.dashColor, dashWidth.toPx())
                 val trackPaint = createStrokePaint(colors.trackColor, trackWidth.toPx())
-                val trackProgressPaint = createStrokePaint(colors.progressColor, trackWidth.toPx())
+                val trackProgressPaint = createStrokePaint(
+                    color = colors.progressColor,
+                    trackWidth = trackWidth.toPx(),
+                    colors = brush?.colors
+                )
 
                 val dashesCoordinates = calculateDashCoordinates(centerX = this.size.width / 2f, ringRadius = ringRadius - trackWidth.toPx())
                 val dashLinesPath = createRadialSliderDashPath(dashesCoordinates)
@@ -143,7 +149,7 @@ fun RadialSlider(
 fun RadialSliderPreview() {
     RadialSlider(
         modifier = Modifier.size(300.dp),
-        progress = {  0f },
+        progress = {  90f },
         dashWidth = 2.dp
     ) {
         Column(

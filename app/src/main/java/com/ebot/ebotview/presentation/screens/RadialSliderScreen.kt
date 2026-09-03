@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,7 +37,14 @@ fun RadialSliderScreen() {
             trackWidth = 14.dp,
             dashWidth = 1.9.dp,
             colors = SliderStyleDefault.sliderColor(
-                progressColor = AzureBlue
+                progressColor = AzureBlue,
+            ),
+            brush = SliderStyleDefault.sliderGradientColor(
+                colors = listOf(
+                    Color(0xFFBD1E33),
+                    Color(0xFFF53C0A),
+                    Color(0xFFF7A8B3)
+                )
             ),
             onChange = { value ->
                 progress = value

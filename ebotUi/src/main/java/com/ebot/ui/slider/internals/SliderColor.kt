@@ -7,5 +7,8 @@ data class SliderColor(
     val progressColor: Color,
     val trackColor: Color,
     val ringColor: Color,
-    val dashColor: Color
+    val dashColor: Color,
+    val brush: SliderBrush?
 )
+
+data class SliderBrush(val colors: List<Color>)
