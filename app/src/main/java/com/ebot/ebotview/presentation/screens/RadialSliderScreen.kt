@@ -28,12 +28,12 @@ fun RadialSliderScreen() {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        var progress by remember { mutableFloatStateOf(30f) }
+        var progress by remember { mutableFloatStateOf(0f) }
 
         RadialSlider(
-            modifier = Modifier.size(300.dp),
-            progress = progress,
-            trackWidth = 12.dp,
+            modifier = Modifier.size(400.dp),
+            progress = { progress },
+            trackWidth = 14.dp,
             dashWidth = 1.9.dp,
             colors = SliderStyleDefault.sliderColor(
                 progressColor = AzureBlue
@@ -43,12 +43,18 @@ fun RadialSliderScreen() {
             }
         ) {
             // YOUR CONTENT
-            Text(
-                text = "${progress.toInt()}%",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontSize = 42.sp
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "${progress.toInt()}",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontSize = 72.sp
+                    )
                 )
-            )
+            }
         }
     }
 }
