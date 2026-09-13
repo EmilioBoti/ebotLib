@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -28,27 +29,40 @@ fun RadialSliderScreen() {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        var progress by remember { mutableFloatStateOf(30f) }
+        var progress by remember { mutableFloatStateOf(0f) }
 
         RadialSlider(
-            modifier = Modifier.size(300.dp),
-            progress = progress,
-            trackWidth = 12.dp,
+            modifier = Modifier.size(400.dp),
+            progress = { progress },
+            trackWidth = 14.dp,
             dashWidth = 1.9.dp,
             colors = SliderStyleDefault.sliderColor(
-                progressColor = AzureBlue
+                progressColor = AzureBlue,
+            ),
+            brush = SliderStyleDefault.sliderGradientColor(
+                colors = listOf(
+                    Color(0xFFBD1E33),
+                    Color(0xFFF53C0A),
+                    Color(0xFFF7A8B3)
+                )
             ),
             onChange = { value ->
                 progress = value
             }
         ) {
             // YOUR CONTENT
-            Text(
-                text = "${progress.toInt()}%",
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontSize = 42.sp
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "${progress.toInt()}",
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontSize = 72.sp
+                    )
                 )
-            )
+            }
         }
     }
 }
