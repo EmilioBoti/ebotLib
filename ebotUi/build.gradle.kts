@@ -27,7 +27,7 @@ android {
         coordinates(
             groupId = "io.github.emilioboti",
             artifactId = "ebot-ui",
-            version = "1.0.2"
+            version = "1.0.3"
         )
 
         pom {
