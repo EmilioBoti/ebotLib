@@ -18,6 +18,7 @@
 *.zip
 *.tar.gz
 *.rar
+*.gpg
 
 gradle.properties
 credentials.properties
